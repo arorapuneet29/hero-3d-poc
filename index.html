@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Model Viewer</title>
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "./three.js-master/build/three.module.js",
+                "three/addons/": "./three.js-master/examples/jsm/"
+            }
+        }
+    </script>
+    <!-- Include OrbitControls library -->
+    <script type="module" src="./path/to/OrbitControls.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tween.js/18.6.4/Tween.min.js"></script>
+    <link rel="stylesheet" href="./css/style.css">
+
+</head>
+
+<body>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x8B0000);
+        const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.2, 300);
+        const renderer = new THREE.WebGLRenderer();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        const aSideDiv = document.getElementById('aSide');
+
+        const floorGeometry = new THREE.PlaneGeometry(3, 3); // Adjust the size as needed
+        const floorMaterial = new THREE.MeshStandardMaterial({ color: 0x808080, side: THREE.DoubleSide });
+        const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+        floor.rotation.x = Math.PI / 2; // Rotate the floor to be horizontal
+        scene.add(floor);
+
+        // Append the renderer's DOM element to the "aSide" div
+        aSideDiv.appendChild(renderer.domElement);
+        // document.body.appendChild(renderer.domElement);
+
+        const loader = new GLTFLoader();
+
+        // Assuming your model is in the 'assets' folder
+         const modelPath = './assets/harley.glb';
+        // const modelPath = './assets/honda.glb';
+
+        let bikeModel; // Variable to store the loaded bike model
+
+        // Add OrbitControls
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.25;
+        controls.screenSpacePanning = false;
+        controls.maxPolarAngle = Math.PI / 2;
+
+        loader.load(modelPath, (glb) => {
+            bikeModel = glb.scene;
+            scene.add(bikeModel);
+
+            // You may need to adjust the camera position and controls based on your model
+            camera.position.set(3.9, 1, 1.4);
+
+            // Optional: Add lighting if your model appears dark
+            const ambientLight = new THREE.AmbientLight(0xffffff, 1);
+            scene.add(ambientLight);
+
+            // Create the first directional light
+            const directionalLight1 = new THREE.DirectionalLight(0xffffff, 0.5); // Adjust color and intensity as needed
+            directionalLight1.position.set(1, 1, 0); // Adjust the position of the light
+
+            // Optionally, create a helper to visualize the first directional light
+            // const directionalLightHelper1 = new THREE.DirectionalLightHelper(directionalLight1);
+
+            // Add the first directional light and its helper to the scene
+            scene.add(directionalLight1);
+            // scene.add(directionalLightHelper1);
+
+            // Create the second directional light
+            const directionalLight2 = new THREE.DirectionalLight(0xffffff, 0.5); // Adjust color and intensity as needed
+            directionalLight2.position.set(-1, -1, 0); // Adjust the position of the light
+
+            // Optionally, create a helper to visualize the second directional light
+            // const directionalLightHelper2 = new THREE.DirectionalLightHelper(directionalLight2);
+
+            // Add the second directional light and its helper to the scene
+            scene.add(directionalLight2);
+            // scene.add(directionalLightHelper2);
+
+
+            // Animation loop
+            const animate = () => {
+                requestAnimationFrame(animate);
+
+                // Your custom animation or updates go here
+
+                controls.update();
+                renderer.render(scene, camera);
+            };
+
+            animate();
+        });
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            const newWidth = window.innerWidth;
+            const newHeight = window.innerHeight;
+
+            camera.aspect = newWidth / newHeight;
+            camera.updateProjectionMatrix();
+
+            renderer.setSize(newWidth, newHeight);
+        });
+
+        // Handle button click to show headlight
+        // function showHeadlight() {
+        //     if (bikeModel) {
+        //         debugger;
+        //         // Define the rotation and highlight animation here
+        //         const initialRotation = bikeModel.rotation.clone();
+        //         const targetRotation = new THREE.Euler(0, Math.PI / 2, 0); // Adjust the target rotation
+        //         const animationDuration = 1000; // in milliseconds
+
+        //         const highlightColor = 0xff0000; // Red color for highlighting
+        //         bikeModel.traverse((object) => {
+        //             if (object.isMesh && object) {
+        //                 console.log(object);
+        //             }
+        //         });
+        //         const originalColor = bikeModel.getObjectByName('Object_10').material.color.clone(); // Assuming the headlight has a separate material
+
+        //         const startTime = Date.now();
+
+        //         const animateHeadlight = () => {
+        //             const elapsed = Date.now() - startTime;
+        //             const progress = Math.min(elapsed / animationDuration, 1);
+
+        //             const tempQuaternion = new THREE.Quaternion(); // Create a temporary quaternion
+
+        //             // Interpolate the rotation using the quaternion
+        //             bikeModel.quaternion.copy(new THREE.Quaternion().setFromEuler(initialRotation).slerp(new THREE.Quaternion().setFromEuler(targetRotation), progress));
+
+        //             // Highlight the headlight
+        //             bikeModel.getObjectByName('Object_10').material.color.setHex(
+        //                 originalColor.clone().lerp(new THREE.Color(highlightColor), progress).getHex()
+        //             );
+
+        //             if (progress < 1) {
+        //                 requestAnimationFrame(animateHeadlight);
+        //             }
+        //         };
+
+        //         animateHeadlight();
+        //     }
+        // }
+        // // Assign event handler using JavaScript
+        // ... (previous code)
+
+        // Handle button click to show headlight
+        // Handle button click to show headlight
+        // Handle button click to show headlight
+        function showHeadlight() {
+            if (bikeModel) {
+                const headlightObject = bikeModel.getObjectByName('Object_10'); // Assuming 'Object_2' is the name of the headlight node
+                if (headlightObject) {
+                    // Calculate the position of the headlight in world coordinates
+                    const headlightWorldPosition = new THREE.Vector3();
+                    headlightObject.getWorldPosition(headlightWorldPosition);
+
+                    // Define the new camera position and look at the headlight
+                    // const newCameraPosition = headlightWorldPosition.clone().add(new THREE.Vector3(0, 1, -3)); // Adjust the offset as needed
+                    const newCameraPosition = headlightWorldPosition.clone().add(new THREE.Vector3(1, 2, 3));
+                    const target = headlightWorldPosition.clone();
+
+                    const animationDuration = 10000; // in milliseconds
+                    const startTime = Date.now();
+
+                    const animateCameraToHeadlight = () => {
+                        const elapsed = Date.now() - startTime;
+                        const progress = Math.min(elapsed / animationDuration, 1);
+
+                        // Interpolate camera position
+                        camera.position.lerp(newCameraPosition, progress);
+
+                        // Look at the headlight
+                        camera.lookAt(target);
+
+                        // Highlight the headlight
+                        highlightHeadlight(headlightObject, progress);
+
+                        if (progress < 1) {
+                            requestAnimationFrame(animateCameraToHeadlight);
+                        }
+                    };
+
+                    animateCameraToHeadlight();
+                }
+            }
+        }
+        function showSpeadometer() {
+            if (bikeModel) {
+                const headlightObject = bikeModel.getObjectByName('Object_13'); // Assuming 'Object_2' is the name of the headlight node
+                if (headlightObject) {
+                    // Calculate the position of the headlight in world coordinates
+                    const headlightWorldPosition = new THREE.Vector3();
+                    headlightObject.getWorldPosition(headlightWorldPosition);
+
+                    // Define the new camera position and look at the headlight
+                    // const newCameraPosition = headlightWorldPosition.clone().add(new THREE.Vector3(0, 1, -3)); // Adjust the offset as needed
+                    const newCameraPosition = headlightWorldPosition.clone().add(new THREE.Vector3(1.5, 2, -3));
+                    const target = headlightWorldPosition.clone();
+
+                    const animationDuration = 5000; // in milliseconds
+                    const startTime = Date.now();
+
+                    const animateCameraToHeadlight = () => {
+                        const elapsed = Date.now() - startTime;
+                        const progress = Math.min(elapsed / animationDuration, 1);
+
+                        // Interpolate camera position
+                        camera.position.lerp(newCameraPosition, progress);
+
+                        // Look at the headlight
+                        camera.lookAt(target);
+
+                        // Highlight the headlight
+                        highlightHeadlight(headlightObject, progress);
+
+                        if (progress < 1) {
+                            requestAnimationFrame(animateCameraToHeadlight);
+                        }
+                    };
+
+                    animateCameraToHeadlight();
+                }
+            }
+        }
+
+        function highlightHeadlight(headlightObject, progress) {
+            // Highlight the headlight
+            const originalColor = headlightObject.material.color.clone();
+            const highlightColor = 0xffaa00; // Red color for highlighting
+
+            headlightObject.material.color.setHex(
+                originalColor.clone().lerp(new THREE.Color(highlightColor), progress).getHex()
+            );
+
+            // Optionally, you can add a bounding box around the headlight
+            const boundingBox = new THREE.Box3().setFromObject(headlightObject);
+            const boundingBoxHelper = new THREE.Box3Helper(boundingBox, 0xffaa00);
+            scene.add(boundingBoxHelper);
+        }
+
+        document.getElementById('showHeadlightBtn').addEventListener('click', showHeadlight);
+
+        document.getElementById('showSpeadometerBtn').addEventListener('click', showSpeadometer);
+    </script>
+    </script>
+
+    <div id="container">
+        <!-- Navbar container -->
+        <div id="navbar">
+            <div id="logo">
+                <img src="https://logos-world.net/wp-content/uploads/2020/12/Hero-Logo.png" alt="logo">
+            </div>
+            <ul>
+                <li class="active">
+                    <a href="#">Home</a>
+                </li>
+                <li><a href="#">Tech</a></li>
+                <li><a href="#">About</a></li>
+                <li><a href="#">Contact</a></li>
+                <li><a href="#">Help</a></li>
+            </ul>
+        </div>
+        <!-- An aside -->
+        <!-- This is for holding the 3D object -->
+        <div id="aSide">
+
+        </div>
+
+        <!-- Content container -->
+        <!-- This is for holding some brief description about the 3D object -->
+        <div id="content">
+            <h2>3D Hero </h2>
+            <div>
+                <button id="showHeadlightBtn">Show Headlight</button>
+                <button id="showSpeadometerBtn">Show Speadometer</button>
+            </div>
+        </div>
+
+        <!-- Social media icons -->
+        <!-- This is for holding some company's social media icons and related links -->
+        <div id="icons">
+            <div id="iconsLogo">
+                <i class="fab fa-facebook-f"></i>
+                <i class="fab fa-instagram"></i>
+                <i class="fab fa-youtube"></i>
+                <i class="fab fa-twitter"></i>
+            </div>
+        </div>
+    </div>
+
+
+
+</body>
+
+</html>
